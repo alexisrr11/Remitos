@@ -90,11 +90,11 @@
             const doc = new jsPDF();
             doc.text("Lista de Remitos", 10, 10);
             
-            remitos.forEach((remito, index) => {
-                doc.text(`Cliente: ${remito.cliente}`, 10, 20 + (index * 10));
-                doc.text(`Producto: ${remito.producto} - Cantidad: ${remito.cantidad}`, 10, 25 + (index * 10));
-                doc.text(`Total: $${remito.total}`, 10, 30 + (index * 10));
-            });
+        remitos.forEach((remito, index) => { 
+            doc.text(`Cliente: ${remito.cliente}`, 10, 20 + (index * 30)); 
+            doc.text(`Producto: ${remito.producto} - Cantidad: ${remito.cantidad}`, 10, 25 + (index * 30));
+            doc.text(`Total: $${remito.total}`, 10, 30 + (index * 30));
+        });
 
             doc.save("remitos.pdf");
         }
