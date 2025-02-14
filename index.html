@@ -55,11 +55,11 @@
             const contenedor = document.getElementById("remitosContainer");
             contenedor.innerHTML = "";
             remitos.forEach((remito, index) => {
-                let productosList = remito.productos.map(p => `${p.name} - Cantidad: ${p.cantidad}`).join('<br>');
+                let productosList = remito.productos.map(p => `ID: ${p.id} - ${p.name} - Cantidad: ${p.cantidad}`).join('<br>');
                 contenedor.innerHTML += `
                     <div class='remito'>
                         <p><strong>Cliente:</strong> ${remito.cliente}</p>
-                        <p><strong>Productos:</strong><br>${productosList}</p>
+                        <p><strong>Productos:</strong><br><br>${productosList}</p>
                         <p><strong>Total:</strong> $${remito.total}</p>
                         <button onclick="eliminarRemito(${index})">Eliminar</button>
                     </div>`;
@@ -69,6 +69,7 @@
         function agregarRemito(event) {
             event.preventDefault();
             const cliente = document.getElementById("cliente").value;
+            const idProducto = parseInt(document.getElementById("productoID").value);
             const producto = document.getElementById("nombreProducto").value;
             const cantidad = parseInt(document.getElementById("cantidad").value);
             const precio = parseFloat(document.getElementById("precioProducto").value);
@@ -77,12 +78,12 @@
             let remitoExistente = remitos.find(remito => remito.cliente === cliente);
 
             if (remitoExistente) {
-                remitoExistente.productos.push({ name: producto, cantidad, total });
+                remitoExistente.productos.push({ id: idProducto, name: producto, cantidad, total });
                 remitoExistente.total += total;
             } else {
                 remitos.push({ 
                     cliente, 
-                    productos: [{ name: producto, cantidad, total }], 
+                    productos: [{ id: idProducto, name: producto, cantidad, total }], 
                     total 
                 });
             }
@@ -106,12 +107,13 @@
             remitos.forEach((remito, index) => { 
                 doc.text(`Cliente: ${remito.cliente}`, 10, 20 + (index * 40)); 
                 remito.productos.forEach((producto, prodIndex) => {
-                    doc.text(`Producto: ${producto.name} - Cantidad: ${producto.cantidad}`, 10, 25 + (index * 40) + (prodIndex * 10));
+                    doc.text(`ID: ${producto.id} - Producto: ${producto.name} - Cantidad: ${producto.cantidad}`, 10, 25 + (index * 40) + (prodIndex * 10));
                 });
                 doc.text(`Total: $${remito.total}`, 10, 30 + (index * 40) + (remito.productos.length * 10));
             });
 
-            doc.save("remitos.pdf");
+            const nombreArchivo = remitos.length > 0 ? `${remitos[0].cliente}.pdf` : "remitos.pdf";
+            doc.save(nombreArchivo);
         }
 
         document.getElementById("remitoForm").addEventListener("submit", agregarRemito);
