@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remitos de Mercadería</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: auto; }
+        .remito { border: 1px solid #ccc; padding: 10px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Gestión de Remitos</h2>
+        <form id="remitoForm">
+            <input type="number" id="productoID" placeholder="ID del producto" required>
+            <input type="text" id="cliente" placeholder="Cliente" required>
+            <input type="text" id="nombreProducto" placeholder="Nombre del producto" readonly>
+            <input type="number" id="precioProducto" placeholder="Precio" readonly>
+            <input type="number" id="cantidad" placeholder="Cantidad" required>
+            <button type="submit">Agregar Remito</button>
+        </form>
+        <button onclick="generarPDF()">Descargar PDF</button>
+        <h3>Lista de Remitos</h3>
+        <div id="remitosContainer"></div>
+    </div>
+
+    <script>
+        const productos = [
+            { id: 1, name: "Triple 15 500gs(bulto3unidades)", price: 5940 },
+            { id: 2, name: "Urea 500gs(bulto3unidades)", price: 5610 },
+            { id: 3, name: "Sulfato de hierro 500gs(bulto3unidades)", price: 4950 },
+            { id: 4, name: "Nitro azul 500gs(bulto3unidades)", price: 8910 },
+            { id: 5, name: "Harina de hueso 500gs(bulto3unidades)", price: 4650 }
+        ];
+
+        let remitos = JSON.parse(localStorage.getItem("remitos")) || [];
+
+        document.getElementById("productoID").addEventListener("input", function () {
+            const id = parseInt(this.value);
+            const producto = productos.find(p => p.id === id);
+            
+            if (producto) {
+                document.getElementById("nombreProducto").value = producto.name;
+                document.getElementById("precioProducto").value = producto.price;
+            } else {
+                document.getElementById("nombreProducto").value = "";
+                document.getElementById("precioProducto").value = "";
+            }
+        });
+
+        function mostrarRemitos() {
+            const contenedor = document.getElementById("remitosContainer");
+            contenedor.innerHTML = "";
+            remitos.forEach((remito, index) => {
+                contenedor.innerHTML += `
+                    <div class='remito'>
+                        <p><strong>Cliente:</strong> ${remito.cliente}</p>
+                        <p><strong>Productos:</strong> ${remito.producto} - Cantidad: ${remito.cantidad}</p>
+                        <p><strong>Total:</strong> $${remito.total}</p>
+                        <button onclick="eliminarRemito(${index})">Eliminar</button>
+                    </div>`;
+            });
+        }
+
+        function agregarRemito(event) {
+            event.preventDefault();
+            const cliente = document.getElementById("cliente").value;
+            const producto = document.getElementById("nombreProducto").value;
+            const cantidad = parseInt(document.getElementById("cantidad").value);
+            const precio = parseFloat(document.getElementById("precioProducto").value);
+            const total = precio * cantidad;
+            
+            remitos.push({ cliente, producto, cantidad, total });
+            localStorage.setItem("remitos", JSON.stringify(remitos));
+            mostrarRemitos();
+            document.getElementById("remitoForm").reset();
+        }
+
+        function eliminarRemito(index) {
+            remitos.splice(index, 1);
+            localStorage.setItem("remitos", JSON.stringify(remitos));
+            mostrarRemitos();
+        }
+
+        function generarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Lista de Remitos", 10, 10);
+            
+            remitos.forEach((remito, index) => {
+                doc.text(`Cliente: ${remito.cliente}`, 10, 20 + (index * 10));
+                doc.text(`Producto: ${remito.producto} - Cantidad: ${remito.cantidad}`, 10, 25 + (index * 10));
+                doc.text(`Total: $${remito.total}`, 10, 30 + (index * 10));
+            });
+
+            doc.save("remitos.pdf");
+        }
+
+        document.getElementById("remitoForm").addEventListener("submit", agregarRemito);
+        mostrarRemitos();
+    </script>
+</body>
+</html>
