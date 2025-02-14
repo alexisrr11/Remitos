@@ -55,10 +55,11 @@
             const contenedor = document.getElementById("remitosContainer");
             contenedor.innerHTML = "";
             remitos.forEach((remito, index) => {
+                let productosList = remito.productos.map(p => `${p.name} - Cantidad: ${p.cantidad}`).join('<br>');
                 contenedor.innerHTML += `
                     <div class='remito'>
                         <p><strong>Cliente:</strong> ${remito.cliente}</p>
-                        <p><strong>Productos:</strong> ${remito.producto} - Cantidad: ${remito.cantidad}</p>
+                        <p><strong>Productos:</strong><br>${productosList}</p>
                         <p><strong>Total:</strong> $${remito.total}</p>
                         <button onclick="eliminarRemito(${index})">Eliminar</button>
                     </div>`;
@@ -73,7 +74,19 @@
             const precio = parseFloat(document.getElementById("precioProducto").value);
             const total = precio * cantidad;
             
-            remitos.push({ cliente, producto, cantidad, total });
+            let remitoExistente = remitos.find(remito => remito.cliente === cliente);
+
+            if (remitoExistente) {
+                remitoExistente.productos.push({ name: producto, cantidad, total });
+                remitoExistente.total += total;
+            } else {
+                remitos.push({ 
+                    cliente, 
+                    productos: [{ name: producto, cantidad, total }], 
+                    total 
+                });
+            }
+
             localStorage.setItem("remitos", JSON.stringify(remitos));
             mostrarRemitos();
             document.getElementById("remitoForm").reset();
@@ -90,11 +103,13 @@
             const doc = new jsPDF();
             doc.text("Lista de Remitos", 10, 10);
             
-        remitos.forEach((remito, index) => { 
-            doc.text(`Cliente: ${remito.cliente}`, 10, 20 + (index * 30)); 
-            doc.text(`Producto: ${remito.producto} - Cantidad: ${remito.cantidad}`, 10, 25 + (index * 30));
-            doc.text(`Total: $${remito.total}`, 10, 30 + (index * 30));
-        });
+            remitos.forEach((remito, index) => { 
+                doc.text(`Cliente: ${remito.cliente}`, 10, 20 + (index * 40)); 
+                remito.productos.forEach((producto, prodIndex) => {
+                    doc.text(`Producto: ${producto.name} - Cantidad: ${producto.cantidad}`, 10, 25 + (index * 40) + (prodIndex * 10));
+                });
+                doc.text(`Total: $${remito.total}`, 10, 30 + (index * 40) + (remito.productos.length * 10));
+            });
 
             doc.save("remitos.pdf");
         }
